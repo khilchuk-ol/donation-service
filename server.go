@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/labstack/echo/v4/middleware"
 	"log"
 	"net/http"
 
@@ -25,6 +26,11 @@ func NewServer(ds services.DonationService, logger *log.Logger) *Server {
 func (s *Server) Run() {
 	e := echo.New()
 
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+	}))
+
 	s.InstallRoutes(e)
 
 	s.Logger.Fatal(e.Start(":8080"))
@@ -35,6 +41,8 @@ func (s *Server) InstallRoutes(e *echo.Echo) {
 	e.GET("/total", s.totalHandler)
 
 	e.GET("/donations/new", s.newDonationsHandler)
+
+	e.GET("/donations/new/test", s.newDonationsTestHandler)
 
 	e.GET("/donations/max", s.maxDonationHandler)
 }
@@ -63,6 +71,15 @@ func (s *Server) newDonationsHandler(c echo.Context) error {
 			Donations []data.Donation `json:"donations"`
 		}{
 			Donations: s.DonationService.GetNewDonationsFromCache(),
+		})
+}
+
+func (s *Server) newDonationsTestHandler(c echo.Context) error {
+	return c.JSON(http.StatusOK,
+		struct {
+			Donations []data.Donation `json:"donations"`
+		}{
+			Donations: s.DonationService.GetNewDonationsTest(),
 		})
 }
 

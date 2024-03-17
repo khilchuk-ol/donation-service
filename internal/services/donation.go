@@ -3,6 +3,8 @@ package services
 import (
 	"fmt"
 	"log"
+	"math/rand"
+	"time"
 
 	"donation-service/internal/data"
 	"donation-service/internal/services/mono"
@@ -52,4 +54,40 @@ func (s DonationService) GetMaxDonation() (data.Donation, bool) {
 
 func (s DonationService) GetTotalSum() float32 {
 	return s.MonoService.AccumulatedTotal
+}
+
+func (s DonationService) GetNewDonationsTest() []data.Donation {
+	res := make([]data.Donation, 6)
+
+	for i := 0; i < 6; i++ {
+		sender := "Bід: " + RandStringRunes(7)
+		comment := ""
+		amount := (i + 1) * (rand.Intn(i+1) + 10)
+
+		if i%3 == 0 {
+			comment = RandStringRunes(15)
+		}
+
+		res[i] = data.Donation{
+			Sender:  sender,
+			Comment: comment,
+			Amount:  float32(amount),
+		}
+	}
+
+	return res
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }
